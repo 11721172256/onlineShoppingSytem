@@ -1,0 +1,270 @@
+java
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.UUID;
+
+// Product class to represent each item in the store
+
+
+class Product {
+    private String id;
+    private String name;
+    private double price;
+    private int quantity;
+
+    public Product(String id, String name, double price, int quantity) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{id='" + id + "', name='" + name + "', price=" + price + ", quantity=" + quantity + "}";
+    }
+}
+
+// User class to represent a user in the shopping system
+class User {
+    private String userId;
+    private String name;
+    private String email;
+
+    public User(String userId, String name, String email) {
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String toString() {
+        return "User{userId='" + userId + "', name='" + name + "', email='" + email + "'}";
+    }
+}
+
+// Order class to represent an order in the shopping system
+class Order {
+    private String orderId;
+    private User user;
+    private Map<Product, Integer> products;
+    private double totalAmount;
+
+    public Order(String orderId, User user) {
+        this.orderId = orderId;
+        this.user = user;
+        this.products = new HashMap<>();
+        this.totalAmount = 0.0;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Map<Product, Integer> getProducts() {
+        return products;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void addProduct(Product product, int quantity) {
+        if (product.getQuantity() < quantity) {
+            System.out.println("Not enough stock for product: " + product.getName());
+            return;
+        }
+        products.put(product, quantity);
+        totalAmount += product.getPrice() * quantity;
+        product.setQuantity(product.getQuantity() - quantity);
+    }
+
+    @Override
+    public String toString() {
+        return "Order{orderId='" + orderId + "', user=" + user + ", products=" + products + ", totalAmount=" + totalAmount + "}";
+    }
+}
+
+// ShoppingSystem class to manage the shopping system, including products, users, and orders
+public class ShoppingSystem {
+    private Map<String, Product> products;
+    private Map<String, User> users;
+    private Map<String, Order> orders;
+
+    public ShoppingSystem() {
+        products = new HashMap<>();
+        users = new HashMap<>();
+        orders = new HashMap<>();
+    }
+
+    public void addProduct(String name, double price, int quantity) {
+        String productId = UUID.randomUUID().toString();
+        Product product = new Product(productId, name, price, quantity);
+        products.put(productId, product);
+        System.out.println("Added product: " + product);
+    }
+
+    public void addUser(String name, String email) {
+        String userId = UUID.randomUUID().toString();
+        User user = new User(userId, name, email);
+        users.put(userId, user);
+        System.out.println("Added user: " + user);
+    }
+
+    public void createOrder(String userId) {
+        if (!users.containsKey(userId)) {
+            System.out.println("User not found.");
+            return;
+        }
+        String orderId = UUID.randomUUID().toString();
+        Order order = new Order(orderId, users.get(userId));
+        orders.put(orderId, order);
+        System.out.println("Created order: " + order);
+    }
+
+    public void addProductToOrder(String orderId, String productId, int quantity) {
+        if (!orders.containsKey(orderId)) {
+            System.out.println("Order not found.");
+            return;
+        }
+        if (!products.containsKey(productId)) {
+            System.out.println("Product not found.");
+            return;
+        }
+        Order order = orders.get(orderId);
+        Product product = products.get(productId);
+        order.addProduct(product, quantity);
+        System.out.println("Added product to order: " + order);
+    }
+
+    public void displayProducts() {
+        System.out.println("Products available:");
+        for (Product product : products.values()) {
+            System.out.println(product);
+        }
+    }
+
+    public void displayUsers() {
+        System.out.println("Users:");
+        for (User user : users.values()) {
+            System.out.println(user);
+        }
+    }
+
+    public void displayOrders() {
+        System.out.println("Orders:");
+        for (Order order : orders.values()) {
+            System.out.println(order);
+        }
+    }
+
+    public static void main(String[] args) {
+        ShoppingSystem system = new ShoppingSystem();
+        Scanner scanner = new Scanner(System.in);
+        String command;
+
+        do {
+            displayMenu();
+            command = scanner.next();
+
+            switch (command) {
+                case "1":
+                    System.out.print("Enter product name: ");
+                    String name = scanner.next();
+                    System.out.print("Enter product price: ");
+                    double price = scanner.nextDouble();
+                    System.out.print("Enter product quantity: ");
+                    int quantity = scanner.nextInt();
+                    system.addProduct(name, price, quantity);
+                    break;
+                case "2":
+                    System.out.print("Enter user name: ");
+                    String userName = scanner.next();
+                    System.out.print("Enter user email: ");
+                    String email = scanner.next();
+                    system.addUser(userName, email);
+                    break;
+                case "3":
+                    System.out.print("Enter user ID: ");
+                    String userId = scanner.next();
+                    system.createOrder(userId);
+                    break;
+                case "4":
+                    System.out.print("Enter order ID: ");
+                    String orderId = scanner.next();
+                    System.out.print("Enter product ID: ");
+                    String productId = scanner.next();
+                    System.out.print("Enter quantity: ");
+                    int orderQuantity = scanner.nextInt();
+                    system.addProductToOrder(orderId, productId, orderQuantity);
+                    break;
+                case "5":
+                    system.displayProducts();
+                    break;
+                case "6":
+                    system.displayUsers();
+                    break;
+                case "7":
+                    system.displayOrders();
+                    break;
+                case "8":
+                    System.out.println("Exiting the system.");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (!command.equals("8"));
+
+        scanner.close();
+    }
+
+    private static void displayMenu() {
+        System.out.println("\nOnline Shopping Management System");
+        System.out.println("1. Add Product");
+        System.out.println("2. Add User");
+        System.out.println("3. Create Order");
+        System.out.println("4. Add Product to Order");
+        System.out.println("5. Display Products");
+        System.out.println("6. Display Users");
+        System.out.println("7. Display Orders");
+        System.out.println("8. Exit");
+        System.out.print("Enter your choice: ");
+    }
+}
